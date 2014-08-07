@@ -33,9 +33,11 @@ function makeTimer(factor){
   }
 
   function setSpin(spinFactor){
-    if(isNaN(spinFactor))spinFactor = 0.25;
+    if(isNaN(spinFactor))spinFactor = factor;
     if(spinFactor===0){
-      rotation = map.getBearing();
+      rotation = rotation*factor/0.25;
+      factor = 0.25;
+      return this.stop();
     }else{
       rotation = rotation*factor/spinFactor; 
     }
