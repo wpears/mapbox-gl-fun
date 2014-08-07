@@ -1,0 +1,40 @@
+body { font-size:20px; margin:0; padding:0; }
+
+#map { position:absolute; top:0; bottom:0; width:100%; }
+
+#controls{
+ position:absolute;
+ left:20px;
+ bottom:10px; 
+ display:table;
+ border-spacing:10px;
+}
+
+#controls > div{
+
+  width:100px;
+  margin-left:15px;
+  height:50px;
+  text-align:center;
+  opacity:0.9;
+  display:table-cell;
+  vertical-align:middle;
+  font-family:sans-serif;
+  color:#f9feff;
+  background: -webkit-linear-gradient(top, #2facef 0%,#7db9e8 100%);
+  background: linear-gradient(top, #2facef 0%,#7db9e8 100%);
+  cursor:pointer;
+
+}
+#controls > div:hover{
+  box-shadow:0 1px 2px 0 #7883de;
+
+}
+#controls >div:active{
+  background:#FF8bc8;
+
+}
+#factor{
+  height:50px;
+  font-size: 20px;
+}
