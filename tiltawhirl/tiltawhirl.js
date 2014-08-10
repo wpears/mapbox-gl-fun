@@ -4,7 +4,7 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoid3BlYXJzIiwiYSI6IkxubGE1VzAifQ.MvM1hTtyi5biYJ
 var whirl = document.getElementById("whirl");
 var stop = document.getElementById("stop");
 var fact = document.getElementById("factor");
-var mvFact = document.getElementById("mvfactor");
+var mvFact = document.getElementById("mvFactor");
 
 var widthThird = window.innerWidth/3;
 var heightThird= window.innerHeight/3;
@@ -59,17 +59,17 @@ function makeTimer(factor){
   }    
 
   function setMovement(mvFactor){
-    if(isNaN(mvFactor))mvFactor = movementFactor;
+    if(!isNaN(mvFactor))movementFactor=mvFactor;
       
   }
 
 
   function stop (){
     cancelAnimationFrame(reqId);
-    ready  1;
+    ready = 1;
   }
 
-  return {run:run, stop:stop, setSpin:setSpin}
+  return {run:run, stop:stop, setSpin:setSpin, setMovement : setMovement}
 }
 
 

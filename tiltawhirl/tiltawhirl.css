@@ -34,7 +34,11 @@ body { font-size:20px; margin:0; padding:0; }
   background:#FF8bc8;
 
 }
-#factor{
+input{
   height:50px;
   font-size: 20px;
+  width:120px;
+}
+#mvFactor{
+  margin-left:10px;
 }
