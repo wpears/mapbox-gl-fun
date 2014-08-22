@@ -11,7 +11,7 @@ var heightThird= window.innerHeight/3;
 var center = [38.5,-121];
 var mouseX;
 var mouseY;
-var movementFactor = 1;
+var movementFactor = 0.01;
 
 
 var map = new mapboxgl.Map({
@@ -32,7 +32,7 @@ function makeTimer(factor){
   function rotate (){
     ready = 1; 
     var bearing = (rotation++)*factor;
-    center = makeCenter();
+    center = makeCenter(bearing);
     map.setCenter(center);
     map.setBearing(bearing)
     run();
@@ -59,7 +59,7 @@ function makeTimer(factor){
   }    
 
   function setMovement(mvFactor){
-    if(!isNaN(mvFactor))movementFactor=mvFactor;
+    if(!isNaN(mvFactor))movementFactor=0.01*mvFactor;
       
   }
 
@@ -80,13 +80,24 @@ function updatePosition(e){
 
 
 makeCenter.arr = new Array(2);
-function makeCenter(){
-  console.log(center);
+function makeCenter(bearing){
   var arr = makeCenter.arr;
-  arr[0] = center[0] + movementFactor * 0.01 * ((mouseY/heightThird>>0) - 1);
-  arr[1] = center[1] + movementFactor * 0.01 * ((mouseX/widthThird>>0) - 1) * -1;
+  var longAngle = Math.sin(bearing/180*Math.PI)*movementFactor;
+  var latAngle = (Math.cos(bearing/180*Math.PI) - 1)*movementFactor;
+  var latOffset =  movementFactor * ((mouseY/heightThird>>0) - 1) * -1;
+  var longOffset = movementFactor * ((mouseX/widthThird>>0) -1);
+  
+  console.log(latOffset,longOffset,bearing,latAngle,longAngle);
+  if(latOffset||longOffset){
+    latOffset += latAngle;
+    longOffset += longAngle;
+  }
+  console.log("combined",latOffset,longOffset);
+  arr[0] = center[0] + latOffset;
+  arr[1] = center[1] + longOffset;
   return arr;
 }
+//currently off at 90 bearing left middle
 
 
 var timer = makeTimer();
