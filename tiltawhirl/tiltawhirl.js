@@ -27,7 +27,7 @@ function makeTimer(factor){
   var rotation = map.getBearing();
   var ready = 1;
 
-  if(!factor) factor = 0.25;
+  if(factor==='') factor = 0.25;
 
   function rotate (){
     ready = 1; 
@@ -46,7 +46,7 @@ function makeTimer(factor){
   }
 
   function setSpin(spinFactor){
-    if(isNaN(spinFactor))spinFactor = factor;
+    if(isNaN(spinFactor)||spinFactor==='')spinFactor = factor;
     if(spinFactor===0){
       rotation = rotation*factor/0.25;
       factor = 0.25;
@@ -80,40 +80,82 @@ function updatePosition(e){
 
 
 
-/*
+ /*to lat @  00... top: 00, tl: 00, left: 00, bl: 00, tr: 00, rgt: 00, rb: 00, bot: 00
+ *to lat @  90... top: -1, tl: 00, left: +1, bl: +2, tr: -2, rgt: -1, rb: 00, bot: +1
+ *to lat @ 180... top: -2, tl: -2, left: 00, bl: +2, tr: -2, rgt: 00, rb: +2, bot: +2
+ *to lat @ 270... top: -1, tl: -2, left: -1, bl: 00, tr: 00, rgt: +1, rb: +2, bot: +1
+ *to lng @  00... top: 00, left: 00, rgt: 00, bot: 00
+ *to lng @  90... top: +1, left: +1, rgt: -1, bot: -1  
+ *to lng @ 180... top: 00, left: +2, rgt: -2, bot: 00
+ *to lng @ 270... top: -1, left: +1, rgt: -1, bot: +1 
+ *
+ *
  * array of fn's key'd by mouse pos
- * corners are the sum of the two directions
+ * corners are the sum of the two directions in both planes
+ *
+ * Latitude functions
  * top: cos(x) -1
  * lft: sin(x)
  * rgt: -sin(x)
  * bot: -(cos(x) -1)
- *to lat @  00... top: 00, tl: 00, left: 00, bl: 00, tr: 00, rgt: 00, rb: 00, bot: 00
- *to lat @  90... top: -1, tl: 00, left: +1, bl: +2, tr: -2, rgt: -1, rb: 00, bot: +1
- *to lat @ 180... top: -2, tl: -2, left: 00, bl: +2, tr: -2, rgt: 00, rb: +2, bot: +2
- *to lat @ 270... top: -1, tl: -2, left: -1, bl: 00, tr: 00, rgt: +1, rb: +2, bot: +1
- *
- *to lng @ 90... top: 
+ * mid: 0
  *
  *
+ * Longitude functions
+ * top: sin(x)
+ * lft: -(cos(x) -1)
+ * rgt: cos(x) -1
+ * bot: -sin(x)
+ * mid: 0
+ *
+ *
+ * find which sector we're in and return appropriate function
+ * apply this fn to provide offset to 
  * */
+function cosMin(deg){
+  return Math.cos(toRad(deg)) - 1;
+}
+function sin(deg){
+  return Math.sin(toRad(deg));
+}
+function negSin(deg){
+  return -sin(deg);
+}
+function negCosMin(deg){
+  return -cosMin(deg);
+}
+function nil(){return 0;}
 
+var latX, latY, lngX, lngY;
+
+latX = lngY = [sin,nil,negSin];
+latY = lngX = [cosMin,nil,negCosMin];
+
+   
+function getLatAdjustment(x,y,bearing){
+  return latX[x](bearing)+latY[y](bearing);
+}
+function getLngAdjustment(x,y,bearing){
+  return lngX[x](bearing)+lngY[y](bearing);
+}
+function toRad(degrees){
+  return degrees/180 * Math.PI;
+}
 
 makeCenter.arr = new Array(2);
 function makeCenter(bearing){
   var arr = makeCenter.arr;
-  var latAngle = Math.sin(bearing/180*Math.PI)*movementFactor;
-  var longAngle = (Math.cos(bearing/180*Math.PI) - 1)*movementFactor;
-  var latOffset =  movementFactor * ((mouseY/heightThird>>0) - 1) * -1;
-  var longOffset = movementFactor * ((mouseX/widthThird>>0) -1);
+  var x = mouseX/widthThird>>0;
+  var y = mouseY/heightThird>>0;
+
+  var latOffset =  -(y - 1);
+  var lngOffset = x -1;
   
-  console.log(latOffset,longOffset,bearing,latAngle,longAngle);
-  if(latOffset||longOffset){
-    latOffset += latAngle;
-    longOffset += longAngle;
-  }
-  console.log("combined",latOffset,longOffset);
-  arr[0] = center[0] + latOffset;
-  arr[1] = center[1] + longOffset;
+  latOffset += getLatAdjustment(x,y,bearing);
+  lngOffset += getLngAdjustment(x,y,bearing);
+
+  arr[0] = center[0] + movementFactor*latOffset;
+  arr[1] = center[1] + movementFactor*lngOffset;
   return arr;
 }
 //correct at 0 bearing
