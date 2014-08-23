@@ -6,19 +6,19 @@ var stop = document.getElementById("stop");
 var fact = document.getElementById("factor");
 var mvFact = document.getElementById("mvFactor");
 
-var widthThird = window.innerWidth/3;
-var heightThird= window.innerHeight/3;
-var center = [38.5,-121];
+var widthThird = window.innerWidth/3 + 1;
+var heightThird= window.innerHeight/3 + 1;
+var center = [38.5,-121.7];
 var mouseX;
 var mouseY;
 var movementFactor = 0.01;
 
 
 var map = new mapboxgl.Map({
-  container: 'map', // container id
-  style: 'style.json', //stylesheet location
-  center: center, // starting position
-  zoom: 9 // starting zoom
+  container: 'map', 
+  style: 'style.json', 
+  center: center, 
+  zoom: 9 
 });
 
 
@@ -79,11 +79,30 @@ function updatePosition(e){
 }
 
 
+
+/*
+ * array of fn's key'd by mouse pos
+ * corners are the sum of the two directions
+ * top: cos(x) -1
+ * lft: sin(x)
+ * rgt: -sin(x)
+ * bot: -(cos(x) -1)
+ *to lat @  00... top: 00, tl: 00, left: 00, bl: 00, tr: 00, rgt: 00, rb: 00, bot: 00
+ *to lat @  90... top: -1, tl: 00, left: +1, bl: +2, tr: -2, rgt: -1, rb: 00, bot: +1
+ *to lat @ 180... top: -2, tl: -2, left: 00, bl: +2, tr: -2, rgt: 00, rb: +2, bot: +2
+ *to lat @ 270... top: -1, tl: -2, left: -1, bl: 00, tr: 00, rgt: +1, rb: +2, bot: +1
+ *
+ *to lng @ 90... top: 
+ *
+ *
+ * */
+
+
 makeCenter.arr = new Array(2);
 function makeCenter(bearing){
   var arr = makeCenter.arr;
-  var longAngle = Math.sin(bearing/180*Math.PI)*movementFactor;
-  var latAngle = (Math.cos(bearing/180*Math.PI) - 1)*movementFactor;
+  var latAngle = Math.sin(bearing/180*Math.PI)*movementFactor;
+  var longAngle = (Math.cos(bearing/180*Math.PI) - 1)*movementFactor;
   var latOffset =  movementFactor * ((mouseY/heightThird>>0) - 1) * -1;
   var longOffset = movementFactor * ((mouseX/widthThird>>0) -1);
   
@@ -97,7 +116,8 @@ function makeCenter(bearing){
   arr[1] = center[1] + longOffset;
   return arr;
 }
-//currently off at 90 bearing left middle
+//correct at 0 bearing
+//
 
 
 var timer = makeTimer();
