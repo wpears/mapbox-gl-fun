@@ -27,16 +27,19 @@ function makeTimer(factor){
   var rotation = map.getBearing();
   var ready = 1;
 
-  if(factor==='') factor = 0.25;
 
   function rotate (){
     ready = 1; 
-    var bearing = (rotation++)*factor;
+    var bearing;
+    if(factor)
+      bearing  = (rotation++)*factor;
+    else bearing = map.getBearing();
     center = makeCenter(bearing);
     map.setCenter(center);
     map.setBearing(bearing)
     run();
   }
+
 
   function run(){
     if(ready){
@@ -45,22 +48,17 @@ function makeTimer(factor){
     }
   }
 
+
   function setSpin(spinFactor){
     if(isNaN(spinFactor)||spinFactor==='')spinFactor = factor;
-    if(spinFactor===0){
-      rotation = rotation*factor/0.25;
-      factor = 0.25;
-      return this.stop();
-    }else{
-      rotation = rotation*factor/spinFactor; 
-    }
+    rotation = rotation*factor/spinFactor; 
     factor = spinFactor;
     run();
   }    
 
+
   function setMovement(mvFactor){
-    if(!isNaN(mvFactor))movementFactor=0.01*mvFactor;
-      
+    if(!isNaN(mvFactor))movementFactor=0.01*mvFactor; 
   }
 
 
@@ -68,6 +66,7 @@ function makeTimer(factor){
     cancelAnimationFrame(reqId);
     ready = 1;
   }
+
 
   return {run:run, stop:stop, setSpin:setSpin, setMovement : setMovement}
 }
@@ -80,12 +79,13 @@ function updatePosition(e){
 
 
 
- /*to lat @  00... top: 00, tl: 00, left: 00, bl: 00, tr: 00, rgt: 00, rb: 00, bot: 00
+/*to lat @  00... top: 00, tl: 00, left: 00, bl: 00, tr: 00, rgt: 00, rb: 00, bot: 00
  *to lat @  90... top: -1, tl: 00, left: +1, bl: +2, tr: -2, rgt: -1, rb: 00, bot: +1
  *to lat @ 180... top: -2, tl: -2, left: 00, bl: +2, tr: -2, rgt: 00, rb: +2, bot: +2
  *to lat @ 270... top: -1, tl: -2, left: -1, bl: 00, tr: 00, rgt: +1, rb: +2, bot: +1
- *to lng @  00... top: 00, left: 00, rgt: 00, bot: 00
- *to lng @  90... top: +1, left: +1, rgt: -1, bot: -1  
+
+ *to lng @  00... top: 00, tl:  , left: 00, bl: , tr: , rgt: 00, rb: , bot: 00
+ *to lng @  90... top: +1, tl: 00 left: +1, rgt: -1, bot: -1  
  *to lng @ 180... top: 00, left: +2, rgt: -2, bot: 00
  *to lng @ 270... top: -1, left: +1, rgt: -1, bot: +1 
  *
@@ -126,46 +126,58 @@ function negCosMin(deg){
 }
 function nil(){return 0;}
 
-var latX, latY, lngX, lngY;
-
-latX = lngY = [sin,nil,negSin];
-latY = lngX = [cosMin,nil,negCosMin];
-
    
 function getLatAdjustment(x,y,bearing){
   return latX[x](bearing)+latY[y](bearing);
 }
+
+
 function getLngAdjustment(x,y,bearing){
   return lngX[x](bearing)+lngY[y](bearing);
 }
+
+
 function toRad(degrees){
   return degrees/180 * Math.PI;
 }
+
+
+var latX, latY, lngX, lngY;
+latX = lngY = [sin,nil,negSin];
+latY = lngX = [cosMin,nil,negCosMin];
+
 
 makeCenter.arr = new Array(2);
 function makeCenter(bearing){
   var arr = makeCenter.arr;
   var x = mouseX/widthThird>>0;
   var y = mouseY/heightThird>>0;
-
+console.log("x,y",x,y);
   var latOffset =  -(y - 1);
   var lngOffset = x -1;
-  
-  latOffset += getLatAdjustment(x,y,bearing);
-  lngOffset += getLngAdjustment(x,y,bearing);
+ console.log("raw offset",latOffset,lngOffset);
+ var latAdjustment = getLatAdjustment(x,y,bearing);
+ var lngAdjustment = getLngAdjustment(x,y,bearing);
+
+ console.log("adjustments",latAdjustment,lngAdjustment);
+  latOffset += latAdjustment;
+  lngOffset += lngAdjustment;
+console.log("post adjustment",latOffset,lngOffset); 
 
   arr[0] = center[0] + movementFactor*latOffset;
   arr[1] = center[1] + movementFactor*lngOffset;
+  console.log(arr);
   return arr;
 }
-//correct at 0 bearing
-//
+//right and left are correct at first and move to be completely wrong at 180
+
+var timer = makeTimer(0.25);
 
 
-var timer = makeTimer();
 var getSpin = function(){
   timer.setSpin(parseFloat(this.value))
 };
+
 
 var getMovement = function(){
   timer.setMovement(parseFloat(this.value));
